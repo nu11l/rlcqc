@@ -86,19 +86,26 @@ namespace RLCustomChat
 
         private void AddChatSet_Click(object sender, EventArgs e)
         {
-            Button button = new Button();
+            if(!((defaultQCSize += 1) >= buttons.Length))
+            {
+                Button button = new Button();
 
-            button.Name = Convert.ToString("button" + (defaultQCSize += 1));
+                button.Name = Convert.ToString("button" + (defaultQCSize));
 
-            button.Text = Convert.ToString(defaultQCSize);
-            button.Location = new Point(buttons[defaultQCSize - 2].Location.X, (buttons[defaultQCSize - 2].Location.Y) + 22);
-            button.Size = new Size(22, 22);
-            button.Visible = true;
+                button.Text = Convert.ToString(defaultQCSize);
+                button.Location = new Point(buttons[defaultQCSize - 2].Location.X, (buttons[defaultQCSize - 2].Location.Y) + 22);
+                button.Size = new Size(22, 22);
+                button.Visible = true;
 
-
-            buttons[defaultQCSize] = button;
-            button.Click += new EventHandler(buttons_pressed);
-            Controls.Add(button);
+                buttons[defaultQCSize] = button;
+              
+                button.Click += new EventHandler(buttons_pressed);
+                Controls.Add(button);
+            }else
+            {
+                return;
+            }
+            
         }
     }
 }
