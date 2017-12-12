@@ -40,6 +40,8 @@ namespace RLCustomChat
         Microsoft.Xna.Framework.Input.Buttons.DPadDown,
         Microsoft.Xna.Framework.Input.Buttons.DPadLeft};
 
+        public int SLEEP_TIME = 75;
+
         public static int SendDelay = 0;
         public static bool RunThread = false;
         public static bool CheckForOverlayUpdate = true;
@@ -50,7 +52,7 @@ namespace RLCustomChat
         public Main()
         {
             InitializeComponent();
-
+            richTextBox2.Text = "" + SLEEP_TIME;
             MainThread = new Thread(ActivateChatFeature);
             MainThread.Start();
 
@@ -170,7 +172,7 @@ namespace RLCustomChat
                         if (SendDelay == 1)
                         {
                             SendKeys.SendWait("t");
-                            Thread.Sleep(75);
+                            Thread.Sleep(SLEEP_TIME);
                             SendKeys.SendWait(dict[key] + "{ENTER}");
                         }
                     }
@@ -272,6 +274,9 @@ namespace RLCustomChat
             Application.Exit();
         }
 
-        
+        private void button1_Click(object sender, EventArgs e)
+        {
+            SLEEP_TIME = Convert.ToInt16(richTextBox2.Text);
+        }
     }
 }
