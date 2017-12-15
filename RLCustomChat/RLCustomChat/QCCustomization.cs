@@ -34,7 +34,7 @@ namespace RLCustomChat
             
         }
 
-        public void UpdateText(Dictionary<Microsoft.Xna.Framework.Input.Buttons, string> toChange = null)
+        public void UpdateText(ref string[] chats, Dictionary<Microsoft.Xna.Framework.Input.Buttons, string> toChange = null)
         {
             
 
@@ -47,7 +47,17 @@ namespace RLCustomChat
                 }
                 
             }
-           
+            int k = 0;
+            foreach (string s in Chats)
+            {
+                chats[k] = s;
+                k++;
+            }
+            for (int i = 0; i < chats.Length; i++)
+            {
+                Console.WriteLine(chats[i]);
+            }
+
         }
 
     

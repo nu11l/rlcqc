@@ -16,7 +16,7 @@ using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
-
+using System.IO;
 namespace RLCustomChat
 {
     public partial class Main : Form
@@ -39,7 +39,7 @@ namespace RLCustomChat
         Microsoft.Xna.Framework.Input.Buttons.DPadRight,
         Microsoft.Xna.Framework.Input.Buttons.DPadDown,
         Microsoft.Xna.Framework.Input.Buttons.DPadLeft};
-
+        public string[,] chatSets = new string[4, 4];
         public int SLEEP_TIME = 75;
 
         public static int SendDelay = 0;
@@ -48,6 +48,35 @@ namespace RLCustomChat
         Overlay overlay = new Overlay();
         QCCustomization chat = new QCCustomization();
         Thread MainThread = null;
+        public string[] fileContentsOnLoad;
+        public string[] UpdatedChatSet = null;
+        int selected = 0;
+        public void initChatSets(string filename)
+        {
+
+            string[] fileContents = File.ReadAllLines(filename);
+            UpdatedChatSet = new string[20];
+            fileContentsOnLoad = fileContents;
+            int j = 0;
+            for (int i = 0; i < fileContents.Length; i++)
+            {
+                if (j >= 4)
+                {
+                    j = 0;
+                }
+
+                if (fileContents[i].Length > 0)
+                {
+                    if (fileContents[i][0] == '#')
+                    {
+                        selected = Convert.ToInt16(Convert.ToInt16(fileContents[i].Substring(1)) - 1);
+                        continue;
+                    }
+                }
+                chatSets[selected, j] = fileContents[i];
+                j++;
+            }
+        }
 
         public Main()
         {
@@ -56,31 +85,20 @@ namespace RLCustomChat
             MainThread = new Thread(ActivateChatFeature);
             MainThread.Start();
 
-            //Below are predefined message sets. These may be altered/changed with the "Customize Chat" button.
-            insultMessages.Add(buttons[0], chat.Chats[0, 0] = "I had it!");
-            insultMessages.Add(buttons[1], chat.Chats[0, 1] = "You stole my boost.");
-            insultMessages.Add(buttons[2], chat.Chats[0, 2] = "What are you doing?");
-            insultMessages.Add(buttons[3], chat.Chats[0, 3] = "How are you in this rank?");
-            for(int i = 0; i < chat.textBoxes.Length; i++)
-            {
-                chat.textBoxes[i].Text = chat.Chats[0, i];
-            }
-            complimentMessages.Add(buttons[0], chat.Chats[1, 0] = "Great shot!");
-            complimentMessages.Add(buttons[1], chat.Chats[1, 1] = "Nice pass!");
-            complimentMessages.Add(buttons[2], chat.Chats[1, 2] = "Good clear!");
-            complimentMessages.Add(buttons[3], chat.Chats[1, 3] = "Good defense!");
+            initChatSets("C:/Users/sraze/Desktop/ChatSet1.txt");
 
-            messageSets.Add(buttons[0], insultMessages);
-            messageSets.Add(buttons[1], complimentMessages);
-            //Below are empty chat sets that can also be changed.
-            for(int i = 2; i < 4; i++)
+            for (int i = 0; i < 4; i++)
             {
                 messageSets.Add(buttons[i], new Dictionary<Microsoft.Xna.Framework.Input.Buttons, string>());
                 for (int j = 0; j < 4; j++)
                 {
-                    messageSets[buttons[i]].Add(buttons[j], chat.Chats[i, j]);
-                    
+                    messageSets[buttons[i]].Add(buttons[j], chat.Chats[i, j] = chatSets[i, j]);
+
                 }
+            }
+            for (int i = 0; i < chat.textBoxes.Length; i++)
+            {
+                chat.textBoxes[i].Text = chat.Chats[0, i];
             }
         }
 
@@ -189,6 +207,29 @@ namespace RLCustomChat
 
 
         }
+        public void UpdateChatSetsFile(string filename)
+        {
+            if (UpdatedChatSet != null)
+            {
+                int j = 0;
+                for (int i = 0; i < fileContentsOnLoad.Length; i++)
+                {
+                    if (fileContentsOnLoad[i].Length > 0)
+                    {
+                        if (fileContentsOnLoad[i][0] == '#')
+                        {
+                            continue;
+                        }
+                    }
+                    fileContentsOnLoad[i] = UpdatedChatSet[j];
+                    j++;
+                }
+
+            }
+
+            File.WriteAllLines(filename, fileContentsOnLoad);
+
+        }
         private void CallTextUpdate()
         {
             if (InvokeRequired)
@@ -198,7 +239,8 @@ namespace RLCustomChat
             }
             if(currentMessageSet != 0)
             {
-                chat.UpdateText(messageSets[buttons[chat.ChatsTarget]]);
+                chat.UpdateText(ref UpdatedChatSet, messageSets[buttons[chat.ChatsTarget]]);
+                UpdateChatSetsFile("C:/Users/sraze/Desktop/ChatSet1.txt");
             }
             
         }
