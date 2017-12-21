@@ -82,6 +82,7 @@ namespace RLCustomChat
         {
             InitializeComponent();
             richTextBox2.Text = "" + SLEEP_TIME;
+
             MainThread = new Thread(ActivateChatFeature);
             MainThread.Start();
 
