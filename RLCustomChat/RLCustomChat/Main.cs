@@ -81,12 +81,12 @@ namespace RLCustomChat
         public Main()
         {
             InitializeComponent();
-            richTextBox2.Text = "" + SLEEP_TIME;
+            DelaySet.Text = "" + SLEEP_TIME;
 
             MainThread = new Thread(ActivateChatFeature);
             MainThread.Start();
 
-            initChatSets("C:/Users/sraze/Desktop/ChatSet1.txt");
+            initChatSets("ChatSet1.txt");
 
             for (int i = 0; i < 4; i++)
             {
@@ -241,7 +241,7 @@ namespace RLCustomChat
             if(currentMessageSet != 0)
             {
                 chat.UpdateText(ref UpdatedChatSet, messageSets[buttons[chat.ChatsTarget]]);
-                UpdateChatSetsFile("C:/Users/sraze/Desktop/ChatSet1.txt");
+                UpdateChatSetsFile("ChatSet1.txt");
             }
             
         }
@@ -317,9 +317,9 @@ namespace RLCustomChat
             Application.Exit();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void SetDelay(object sender, EventArgs e)
         {
-            SLEEP_TIME = Convert.ToInt16(richTextBox2.Text);
+            SLEEP_TIME = Convert.ToInt16(DelaySet.Text);
         }
     }
 }
