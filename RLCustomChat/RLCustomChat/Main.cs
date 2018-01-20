@@ -27,9 +27,7 @@ namespace RLCustomChat
         [DllImport("User32.dll")]
         private static extern short GetAsyncKeyState(System.Int32 vKey);
 
-        
-        public static Dictionary<Microsoft.Xna.Framework.Input.Buttons, string> insultMessages = new Dictionary<Microsoft.Xna.Framework.Input.Buttons, string>();
-        public static Dictionary<Microsoft.Xna.Framework.Input.Buttons, string> complimentMessages = new Dictionary<Microsoft.Xna.Framework.Input.Buttons, string>();
+ 
         public static Dictionary<Microsoft.Xna.Framework.Input.Buttons, Dictionary<Microsoft.Xna.Framework.Input.Buttons, string>> messageSets = new Dictionary<Microsoft.Xna.Framework.Input.Buttons, Dictionary<Microsoft.Xna.Framework.Input.Buttons, string>>();
         public Microsoft.Xna.Framework.Input.Buttons currentMessageSet = Microsoft.Xna.Framework.Input.Buttons.DPadUp;
         Microsoft.Xna.Framework.Input.Buttons key = new Microsoft.Xna.Framework.Input.Buttons();
@@ -39,18 +37,23 @@ namespace RLCustomChat
         Microsoft.Xna.Framework.Input.Buttons.DPadRight,
         Microsoft.Xna.Framework.Input.Buttons.DPadDown,
         Microsoft.Xna.Framework.Input.Buttons.DPadLeft};
+
         public string[,] chatSets = new string[4, 4];
         public int SLEEP_TIME = 75;
 
         public static int SendDelay = 0;
         public static bool RunThread = false;
         public static bool CheckForOverlayUpdate = true;
+
         Overlay overlay = new Overlay();
         QCCustomization chat = new QCCustomization();
         Thread MainThread = null;
+
         public string[] fileContentsOnLoad;
         public string[] UpdatedChatSet = null;
+
         int selected = 0;
+
         public void initChatSets(string filename)
         {
 
@@ -76,6 +79,18 @@ namespace RLCustomChat
                 chatSets[selected, j] = fileContents[i];
                 j++;
             }
+        }
+
+        public delegate void FuncThreadCall();
+
+        public void CallFunc(FuncThreadCall func)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<FuncThreadCall>(CallFunc), new object[] { func });
+                return;
+            }
+            func();
         }
 
         public Main()
@@ -105,8 +120,9 @@ namespace RLCustomChat
 
         private void ActivateChatFeature()
         {
-            
-            RefreshChatCustomization();
+
+            //RefreshChatCustomization();
+            CallFunc(chat.Refresh);
             Dictionary<Microsoft.Xna.Framework.Input.Buttons, string> dict = new Dictionary<Microsoft.Xna.Framework.Input.Buttons, string>();
             while (true)
             {
@@ -122,7 +138,7 @@ namespace RLCustomChat
                             KeyValuePair<Microsoft.Xna.Framework.Input.Buttons, string> pair = dict.ElementAt(i);
                             overlay.StrToDraw[i] = pair.Value;
                         }
-                        RefreshOverlay();
+                        CallFunc(overlay.Refresh);
                         chat.RefreshOverlayCue = false;
                     }
                 }
@@ -163,7 +179,7 @@ namespace RLCustomChat
                             overlay.StrToDraw[j] = pair.Value;
                         }
                         overlay.Draw = true;
-                        RefreshOverlay();
+                        CallFunc(overlay.Refresh);
                         Thread.Sleep(300);
 
                     }
@@ -254,24 +270,7 @@ namespace RLCustomChat
             }
             Refresh();
         }
-        private void RefreshOverlay()
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action(RefreshOverlay), new object[] { });
-                return;
-            }
-            overlay.Refresh();
-        }
-        private void RefreshChatCustomization()
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action(RefreshChatCustomization), new object[] { });
-                return;
-            }
-            chat.Refresh();
-        }
+       
         private void AlterTextBox(string value)
         {
             if (InvokeRequired)
@@ -320,6 +319,11 @@ namespace RLCustomChat
         private void SetDelay(object sender, EventArgs e)
         {
             SLEEP_TIME = Convert.ToInt16(DelaySet.Text);
+        }
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
