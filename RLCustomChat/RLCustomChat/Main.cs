@@ -54,6 +54,19 @@ namespace RLCustomChat
 
         int selected = 0;
 
+        public delegate void FuncThreadCall();
+
+        public void CallFunc(FuncThreadCall func)
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(new Action<FuncThreadCall>(CallFunc), new object[] { func });
+                return;
+            }
+            func();
+        }
+
+
         public void initChatSets(string filename)
         {
 
@@ -81,18 +94,7 @@ namespace RLCustomChat
             }
         }
 
-        public delegate void FuncThreadCall();
-
-        public void CallFunc(FuncThreadCall func)
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action<FuncThreadCall>(CallFunc), new object[] { func });
-                return;
-            }
-            func();
-        }
-
+        
         public Main()
         {
             InitializeComponent();
@@ -260,15 +262,6 @@ namespace RLCustomChat
                 UpdateChatSetsFile("ChatSet1.txt");
             }
             
-        }
-        private void RefreshCurrent()
-        {
-            if (InvokeRequired)
-            {
-                this.Invoke(new Action(RefreshCurrent), new object[] { });
-                return;
-            }
-            Refresh();
         }
        
         private void AlterTextBox(string value)
