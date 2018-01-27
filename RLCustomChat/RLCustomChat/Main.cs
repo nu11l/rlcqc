@@ -50,7 +50,7 @@ namespace RLCustomChat
         Thread MainThread = null;
 
         public string[] fileContentsOnLoad;
-        public string[] UpdatedChatSet = null;
+        public string[] UpdatedChatSet;
 
         int selected = 0;
 
@@ -71,7 +71,8 @@ namespace RLCustomChat
         {
 
             string[] fileContents = File.ReadAllLines(filename);
-            UpdatedChatSet = new string[20];
+            UpdatedChatSet = new string[fileContents.Length];
+
             fileContentsOnLoad = fileContents;
             int j = 0;
             for (int i = 0; i < fileContents.Length; i++)
@@ -114,10 +115,8 @@ namespace RLCustomChat
 
                 }
             }
-            for (int i = 0; i < chat.textBoxes.Length; i++)
-            {
-                chat.textBoxes[i].Text = chat.Chats[0, i];
-            }
+  
+            chat.Init_TextBoxes();
         }
 
         private void ActivateChatFeature()
@@ -208,9 +207,12 @@ namespace RLCustomChat
                         SendDelay++;
                         if (SendDelay == 1)
                         {
-                            SendKeys.SendWait("t");
+                            //checks for existence of [y] preceding message - if this yields true, it will send a 'y' to open team chat
+                            bool TeamChatPrefixExists = (dict[key].Substring(0, 3).Equals("[y]"));
+
+                            SendKeys.SendWait((TeamChatPrefixExists) ? "y" : "t");
                             Thread.Sleep(SLEEP_TIME);
-                            SendKeys.SendWait(dict[key] + "{ENTER}");
+                            SendKeys.SendWait(((TeamChatPrefixExists) ? dict[key].Substring(3) : dict[key]) + "{ENTER}"); //if [y] prefix exists, it is excluded from the main message being sent
                         }
                     }
                     else

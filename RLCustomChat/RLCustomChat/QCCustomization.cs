@@ -30,8 +30,15 @@ namespace RLCustomChat
 
             buttons[0] = button1;
             buttons[1] = button2;
-            
-            
+
+        }
+
+        public void Init_TextBoxes()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                textBoxes[i].Text = Chats[ChatsTarget, i];
+            }
         }
 
         public void UpdateText(ref string[] chats, Dictionary<Microsoft.Xna.Framework.Input.Buttons, string> toChange = null)

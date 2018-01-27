@@ -89,7 +89,6 @@ namespace RLCustomChat
         private void Overlay_Paint(object sender, PaintEventArgs e)
         {
             Graphics g;
-            Pen myPen = new Pen(Color.Red);
             Font DrawFont = new Font("Arial", 16);
             SolidBrush DrawBrush = new SolidBrush(Color.White);
             SolidBrush FillBrush = new SolidBrush(Color.Red);
@@ -105,7 +104,17 @@ namespace RLCustomChat
                 int loopCounterStr = 0;
                 foreach (string s in StrToDraw)
                 {
-                    g.DrawString(s, DrawFont, DrawBrush, 30, 440 + (loopCounterStr * 52));
+                    //Resets necessary variables before prefix check
+                    string ToDraw = s;
+                    DrawBrush.Color = Color.White;
+
+                    //prefix check, modifies string and font color depending on presence of prefix
+                    if(s.Substring(0, 3).Equals("[y]"))
+                    {
+                        ToDraw = s.Replace("[y]", "(TEAM) ");
+                        DrawBrush.Color = Color.Green;
+                    }
+                    g.DrawString(ToDraw, DrawFont, DrawBrush, 30, 440 + (loopCounterStr * 52));
                     loopCounterStr++;
                 }
                 loopCounterStr = 0;
