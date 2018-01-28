@@ -78,7 +78,7 @@ namespace RLCustomChat
             {
                 return;
             }
-            ChatsTarget = Convert.ToInt16(b.Text);
+            ChatsTarget = Convert.ToInt16(b.Text) - 1;  //the value displayed on the button is not a valid array index since it starts at 1, so to compensate, 1 is subtracted
             for(int i = 0; i < 4; i++)
             {
                 textBoxes[i].Text = Chats[ChatsTarget, i];
@@ -106,12 +106,14 @@ namespace RLCustomChat
             if(!((defaultQCSize += 1) >= buttons.Length))
             {
                 Button button = new Button();
-
                 button.Name = Convert.ToString("button" + (defaultQCSize));
 
-                button.Text = Convert.ToString(defaultQCSize);
+                button.Text = Convert.ToString(defaultQCSize + 1);
                 button.Location = new Point(buttons[defaultQCSize - 2].Location.X, (buttons[defaultQCSize - 2].Location.Y) + 22);
-                button.Size = new Size(22, 22);
+                //extracts default values from preexisting button
+                button.Size = buttons[0].Size;              
+                button.BackColor = buttons[0].BackColor;
+                button.ForeColor = buttons[0].ForeColor;
                 button.Visible = true;
 
                 buttons[defaultQCSize] = button;

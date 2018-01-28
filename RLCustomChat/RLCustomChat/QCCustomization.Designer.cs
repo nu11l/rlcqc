@@ -75,22 +75,24 @@
             // 
             // button1
             // 
+            this.button1.BackColor = System.Drawing.SystemColors.Control;
             this.button1.Location = new System.Drawing.Point(13, 13);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(22, 22);
             this.button1.TabIndex = 4;
-            this.button1.Text = "0";
-            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Text = "1";
+            this.button1.UseVisualStyleBackColor = false;
             this.button1.Click += new System.EventHandler(this.buttons_pressed);
             // 
             // button2
             // 
+            this.button2.BackColor = System.Drawing.SystemColors.Control;
             this.button2.Location = new System.Drawing.Point(41, 13);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(22, 22);
             this.button2.TabIndex = 5;
-            this.button2.Text = "1";
-            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Text = "2";
+            this.button2.UseVisualStyleBackColor = false;
             this.button2.Click += new System.EventHandler(this.buttons_pressed);
             // 
             // AddChatSet
@@ -107,6 +109,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.SystemColors.GradientActiveCaption;
             this.ClientSize = new System.Drawing.Size(284, 199);
             this.Controls.Add(this.AddChatSet);
             this.Controls.Add(this.button2);
@@ -115,8 +118,9 @@
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.richTextBox3);
             this.Controls.Add(this.richTextBox4);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "QCCustomization";
-            this.Text = "QCCustomization";
+            this.Text = "Customize Chat Sets";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.QCCustomization_Closing);
             this.Click += new System.EventHandler(this.buttons_pressed);
             this.ResumeLayout(false);

@@ -38,6 +38,7 @@
             // OverlayState
             // 
             this.OverlayState.AutoSize = true;
+            this.OverlayState.ForeColor = System.Drawing.SystemColors.MenuText;
             this.OverlayState.Location = new System.Drawing.Point(8, 12);
             this.OverlayState.Name = "OverlayState";
             this.OverlayState.Size = new System.Drawing.Size(98, 17);
@@ -95,6 +96,8 @@
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.OverlayState);
             this.ForeColor = System.Drawing.SystemColors.MenuText;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "Main";
             this.Text = "Custom RL Chat";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);

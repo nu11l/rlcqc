@@ -99,6 +99,7 @@ namespace RLCustomChat
         public Main()
         {
             InitializeComponent();
+
             DelaySet.Text = "" + SLEEP_TIME;
 
             MainThread = new Thread(ActivateChatFeature);
@@ -318,7 +319,6 @@ namespace RLCustomChat
 
         private void Main_Load(object sender, EventArgs e)
         {
-
         }
     }
 }
