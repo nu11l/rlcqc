@@ -110,6 +110,8 @@
     <None Include="Resources\TestChatBox5.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Microsoft.Xna.Framework.dll" />
+    <None Include="bin\Debug\Microsoft.Xna.Framework.dll" />
     <Content Include="Chat.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

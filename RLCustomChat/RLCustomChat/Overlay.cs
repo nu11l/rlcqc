@@ -107,14 +107,36 @@ namespace RLCustomChat
                     //Resets necessary variables before prefix check
                     string ToDraw = s;
                     DrawBrush.Color = Color.White;
+                    DrawFont = new Font("Arial", 16);
+
+                    int DrawX = 30;
+                    int DrawY = 440 + loopCounterStr * 52;
 
                     //prefix check, modifies string and font color depending on presence of prefix
-                    if(s.Substring(0, 3).Equals("[y]"))
-                    {
-                        ToDraw = s.Replace("[y]", "(TEAM) ");
-                        DrawBrush.Color = Color.Green;
+                    if(s.Length >= 3) {
+                        if (s.Substring(0, 3).Equals("[y]"))
+                        {
+                            ToDraw = s.Replace("[y]", "(TEAM) ");
+                            
+                            DrawBrush.Color = Color.Green;
+                        }
                     }
-                    g.DrawString(ToDraw, DrawFont, DrawBrush, 30, 440 + (loopCounterStr * 52));
+
+
+                    if (ToDraw.Length >= 28)
+                    {
+                        string TempToDraw = ToDraw.Substring(0, 28);
+                        ToDraw = ToDraw.Substring(28);
+
+                        int LastSpacePos = TempToDraw.LastIndexOf(' ');
+                        TempToDraw = TempToDraw.Remove(LastSpacePos, 1).Insert(LastSpacePos, "\n");
+
+                        ToDraw = TempToDraw + ToDraw;
+
+                        DrawFont = new Font("Arial", 12);
+                    }
+
+                    g.DrawString(ToDraw, DrawFont, DrawBrush, DrawX, DrawY);
                     loopCounterStr++;
                 }
                 loopCounterStr = 0;
