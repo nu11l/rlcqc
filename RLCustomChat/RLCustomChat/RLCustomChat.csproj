@@ -52,6 +52,9 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="VAMemory">
+      <HintPath>..\..\..\..\..\Users\S\Desktop\VAMemory.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs">

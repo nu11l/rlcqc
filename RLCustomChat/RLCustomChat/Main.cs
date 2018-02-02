@@ -17,6 +17,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using System.IO;
+using System.Diagnostics;
+
 namespace RLCustomChat
 {
     public partial class Main : Form
@@ -53,6 +55,63 @@ namespace RLCustomChat
         public string[] UpdatedChatSet;
 
         int selected = 0;
+
+        VAMemory Mem;
+        public const string PROCESS_NAME = "RocketLeague";
+        int[] boost_offset = { 0xEC, 0x500, 0x3DC, 0x554, 0x54 };
+        public static int BaseAddress;
+
+
+        int FindMultiLevelPointer(long Base, int[] offsets)
+        {
+            int prev = (int)Base;
+            int cur;
+            for (int i = 0; i < offsets.Length - 1; i++)
+            {
+                cur = Mem.ReadInt32((IntPtr)prev + offsets[i]);
+                prev = cur;
+            }
+            int final_offset = offsets[offsets.Length - 1];
+            int returned_address = prev + final_offset;
+            if (returned_address <= 100)
+            {
+                return -1;
+            }
+            return (prev + final_offset);
+        }
+
+        public static bool GetModule()
+        {
+            try
+            {
+                Process[] p = Process.GetProcessesByName(PROCESS_NAME);
+                if (p.Length > 0)
+                {
+                    foreach (ProcessModule m in p[0].Modules)
+                    {
+                        if (m.ModuleName.Equals("RocketLeague.exe"))
+                        {
+                            Console.WriteLine("Found!");
+                            BaseAddress = (int)m.BaseAddress;
+                            return true;
+                        }
+                    }
+                    return true;
+                }
+                else
+                {
+                    Console.WriteLine("Did not find!");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+        }
+
+
 
         public delegate void FuncThreadCall();
 
@@ -102,6 +161,8 @@ namespace RLCustomChat
 
             DelaySet.Text = "" + SLEEP_TIME;
 
+            Mem = new VAMemory(PROCESS_NAME);
+
             MainThread = new Thread(ActivateChatFeature);
             MainThread.Start();
 
@@ -126,105 +187,109 @@ namespace RLCustomChat
             //RefreshChatCustomization();
             CallFunc(chat.Refresh);
             Dictionary<Microsoft.Xna.Framework.Input.Buttons, string> dict = new Dictionary<Microsoft.Xna.Framework.Input.Buttons, string>();
-            while (true)
+            if(GetModule())
             {
-                
-                
-                if(CheckForOverlayUpdate)
+                while (true)
                 {
-                    if (chat.RefreshOverlayCue)
+                    uint boost_base = Mem.ReadUInteger((IntPtr)BaseAddress + 0x19CBB64);
+
+                    if (CheckForOverlayUpdate)
                     {
-                        CallTextUpdate();
-                        for (int i = 0; i < dict.Count; i++)
+                        if (chat.RefreshOverlayCue)
                         {
-                            KeyValuePair<Microsoft.Xna.Framework.Input.Buttons, string> pair = dict.ElementAt(i);
-                            overlay.StrToDraw[i] = pair.Value;
-                        }
-                        CallFunc(overlay.Refresh);
-                        chat.RefreshOverlayCue = false;
-                    }
-                }
-                if(RunThread)
-                {
-                    GamePadState currentState = GamePad.GetState(PlayerIndex.One);
-                    foreach (var i in messageSets)
-                    {
-                        if (currentState.IsConnected && currentState.IsButtonDown(i.Key))
-                        {
-                            if (!overlay.Draw)
+                            CallTextUpdate();
+                            for (int i = 0; i < dict.Count; i++)
                             {
-                                currentMessageSet = i.Key;
+                                KeyValuePair<Microsoft.Xna.Framework.Input.Buttons, string> pair = dict.ElementAt(i);
+                                overlay.StrToDraw[i] = pair.Value;
+                            }
+                            CallFunc(overlay.Refresh);
+                            chat.RefreshOverlayCue = false;
+                        }
+                    }
+                    if (RunThread && boost_base == 1)
+                    {
+                        GamePadState currentState = GamePad.GetState(PlayerIndex.One);
+                        foreach (var i in messageSets)
+                        {
+                            if (currentState.IsConnected && currentState.IsButtonDown(i.Key))
+                            {
+                                if (!overlay.Draw)
+                                {
+                                    currentMessageSet = i.Key;
+                                }
+                                else
+                                {
+                                    overlay.Timer.Stop();
+                                    overlay.Timer.Start();
+                                    continue;
+                                }
+
+
                             }
                             else
                             {
-                                overlay.Timer.Stop();
-                                overlay.Timer.Start();
                                 continue;
                             }
 
 
+
+                            dict = messageSets[currentMessageSet];
+
+                            overlay.StrToDraw = new string[4];
+
+                            for (int j = 0; j < dict.Count; j++)
+                            {
+                                KeyValuePair<Microsoft.Xna.Framework.Input.Buttons, string> pair = dict.ElementAt(j);
+                                overlay.StrToDraw[j] = pair.Value;
+                            }
+                            overlay.Draw = true;
+                            CallFunc(overlay.Refresh);
+                            Thread.Sleep(300);
+
+                        }
+                        currentState = GamePad.GetState(PlayerIndex.One);
+                        foreach (var i in dict)
+                        {
+                            if (overlay.Draw)
+                            {
+                                Microsoft.Xna.Framework.Input.Buttons iterKey = i.Key;
+                                if (currentState.IsConnected && currentState.IsButtonDown(iterKey))
+                                {
+                                    AlterTextBox("" + i.Key);
+                                    key = i.Key;
+                                    break;
+                                }
+                                key = 0;
+                            }
+
+
+
+                        }
+                        if (key != 0)
+                        {
+                            SendDelay++;
+                            if (SendDelay == 1)
+                            {
+                                //checks for existence of [y] preceding message - if this yields true, it will send a 'y' to open team chat
+                                bool TeamChatPrefixExists = (dict[key].Substring(0, 3).Equals("[y]"));
+
+                                SendKeys.SendWait((TeamChatPrefixExists) ? "y" : "t");
+                                Thread.Sleep(SLEEP_TIME);
+                                SendKeys.SendWait(((TeamChatPrefixExists) ? dict[key].Substring(3) : dict[key]) + "{ENTER}"); //if [y] prefix exists, it is excluded from the main message being sent
+                            }
                         }
                         else
                         {
-                            continue;
+                            SendDelay = 0;
                         }
 
 
-
-                        dict = messageSets[currentMessageSet];
-
-                        overlay.StrToDraw = new string[4];
-
-                        for (int j = 0; j < dict.Count; j++)
-                        {
-                            KeyValuePair<Microsoft.Xna.Framework.Input.Buttons, string> pair = dict.ElementAt(j);
-                            overlay.StrToDraw[j] = pair.Value;
-                        }
-                        overlay.Draw = true;
-                        CallFunc(overlay.Refresh);
-                        Thread.Sleep(300);
-
                     }
-                    currentState = GamePad.GetState(PlayerIndex.One);
-                    foreach (var i in dict)
-                    {
-                        if (overlay.Draw)
-                        {
-                            Microsoft.Xna.Framework.Input.Buttons iterKey = i.Key;
-                            if (currentState.IsConnected && currentState.IsButtonDown(iterKey))
-                            {
-                                AlterTextBox("" + i.Key);
-                                key = i.Key;
-                                break;
-                            }
-                            key = 0;
-                        }
-
-
-
-                    }
-                    if (key != 0)
-                    {
-                        SendDelay++;
-                        if (SendDelay == 1)
-                        {
-                            //checks for existence of [y] preceding message - if this yields true, it will send a 'y' to open team chat
-                            bool TeamChatPrefixExists = (dict[key].Substring(0, 3).Equals("[y]"));
-
-                            SendKeys.SendWait((TeamChatPrefixExists) ? "y" : "t");
-                            Thread.Sleep(SLEEP_TIME);
-                            SendKeys.SendWait(((TeamChatPrefixExists) ? dict[key].Substring(3) : dict[key]) + "{ENTER}"); //if [y] prefix exists, it is excluded from the main message being sent
-                        }
-                    }
-                    else
-                    {
-                        SendDelay = 0;
-                    }
-
-
+                    Thread.Sleep(1);
                 }
-                Thread.Sleep(1);
             }
+            
                 
 
 
