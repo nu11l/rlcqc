@@ -60,6 +60,7 @@ namespace RLCustomChat
         public const string PROCESS_NAME = "RocketLeague";
         int[] boost_offset = { 0xEC, 0x500, 0x3DC, 0x554, 0x54 };
         public static int BaseAddress;
+        public static int TrainingAddress;
 
 
         int FindMultiLevelPointer(long Base, int[] offsets)
@@ -80,7 +81,7 @@ namespace RLCustomChat
             return (prev + final_offset);
         }
 
-        public static bool GetModule()
+        public static int GetModule(String ModuleName)
         {
             try
             {
@@ -89,24 +90,23 @@ namespace RLCustomChat
                 {
                     foreach (ProcessModule m in p[0].Modules)
                     {
-                        if (m.ModuleName.Equals("RocketLeague.exe"))
+                        if (m.ModuleName.Equals(ModuleName))
                         {
                             Console.WriteLine("Found!");
-                            BaseAddress = (int)m.BaseAddress;
-                            return true;
+                            return (int)m.BaseAddress;
                         }
                     }
-                    return true;
+                    return 0;
                 }
                 else
                 {
                     Console.WriteLine("Did not find!");
-                    return false;
+                    return 0;
                 }
             }
             catch (Exception ex)
             {
-                return false;
+                return 0;
             }
 
         }
@@ -187,11 +187,22 @@ namespace RLCustomChat
             //RefreshChatCustomization();
             CallFunc(chat.Refresh);
             Dictionary<Microsoft.Xna.Framework.Input.Buttons, string> dict = new Dictionary<Microsoft.Xna.Framework.Input.Buttons, string>();
-            if(GetModule())
+            BaseAddress = GetModule("RocketLeague.exe");
+            int[] ChatEnabledOffsets = { 0xF8, 0x1C0, 0x10, 0x78, 0x414 };
+            int[] InMenuOffsets = { 0x10, 0xC, 0x0, 0x614, 0x718 };
+            if (BaseAddress != 0)
             {
                 while (true)
                 {
-                    uint boost_base = Mem.ReadUInteger((IntPtr)BaseAddress + 0x19CBB64);
+                    //checks whether or not the player is in a menu
+                    uint InMenuBase = Mem.ReadUInteger((IntPtr)BaseAddress + 0x019FA7E8);
+                    int InMenuAddress = FindMultiLevelPointer(InMenuBase, InMenuOffsets);
+                    int InMenu = Mem.ReadInt32((IntPtr)InMenuAddress);
+
+                    //checks whether or not the quick chat is enabled
+                    uint ChatEnabledBase = Mem.ReadUInteger((IntPtr)BaseAddress + 0x01962610);
+                    int ChatEnabledAddress = FindMultiLevelPointer(ChatEnabledBase, ChatEnabledOffsets);
+                    int ChatEnabled = Mem.ReadInt32((IntPtr)ChatEnabledAddress);
 
                     if (CheckForOverlayUpdate)
                     {
@@ -207,7 +218,7 @@ namespace RLCustomChat
                             chat.RefreshOverlayCue = false;
                         }
                     }
-                    if (RunThread && boost_base == 1)
+                    if (RunThread && (InMenu == 0 && (ChatEnabled == 1 || ChatEnabled == 25 || ChatEnabled == 27)))
                     {
                         GamePadState currentState = GamePad.GetState(PlayerIndex.One);
                         foreach (var i in messageSets)
